@@ -40,5 +40,11 @@ class NaverBlogCrawlerTest(unittest.TestCase):
         answerTitle = "[자료구조] 트라이 (Trie)"
         self.assertEqual(answerTitle, self.crawler.postTitle)
 
+    def test_writeBackup(self):
+        self.crawler.writeAreasToFile()
+        self.assertTrue(True)
+
+bytes
+
 if __name__ == "__main__":
     unittest.main()

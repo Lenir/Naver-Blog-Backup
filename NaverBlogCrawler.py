@@ -13,6 +13,7 @@ class NaverBlogCrawler:
         self.postSoup = None
         self.postFrameSoup = None
         self.backupDir = ""
+        self.backupFile = None
         self.postSetup()
 
     def isSmartEditor3Posting(self, postFrameUrl):
@@ -32,6 +33,7 @@ class NaverBlogCrawler:
         self.backupDir = self.getBackupDirName()
 
         self.makeBackupDir()
+        self.backupFile = open(self.backupDir+"/post.html", 'w')
 
     def getPostFrameUrl(self):
         mainFrameTag = self.postSoup.find('frame', {'id': 'mainFrame'})
@@ -73,9 +75,29 @@ class NaverBlogCrawler:
             editAreas = self.postFrameSoup.find_all('div',{'class':'se_editArea'})
             return editAreas
 
+    def writeAreasToFile(self):
+        editAreas = self.getPostEditAreas()
+        for editArea in editAreas:
+            if self.isTextEditArea(editArea):
+                self.backupFile.write(str(editArea))
+            elif self.isImageEditArea(editArea):
+                imgsrc = re.search("src=.*(.PNG|.JPEG|.GIF)")
+                imgurl = imgsrc[5:]
+                saveImgName = self.getSaveImageName(imgurl)
+                re.sub("src=.*(.PNG|.JPEG|.GIF)", self.backupDir + saveImgName, editArea)
+                self.backupFile.write(str(editArea))
+                pass
+
     def isTextEditArea(self, editArea):
         strEditArea = str(editArea)
         if "se_textView" in strEditArea:
+            return True
+        else:
+            return False
+
+    def isImageEditArea(self, editArea):
+        strEditArea = str(editArea)
+        if "<img alt" in strEditArea:
             return True
         else:
             return False
