@@ -16,20 +16,14 @@ class NaverBlogCrawlerTest(unittest.TestCase):
 
     def test_getEditAreas(self):
         editAreas = self.crawler.getPostEditAreas()
-        for editArea in editAreas:
-            print(editArea)
+        # for editArea in editAreas:
+        #     print(editArea)
         self.assertTrue(editAreas is not None)
 
     def test_isTextArea(self):
         editAreas = self.crawler.getPostEditAreas()
         targetArea = editAreas[1]
         self.assertTrue(self.crawler.isTextEditArea(targetArea))
-
-    def test_saveImage(self):
-        rawImageUrl = "https://postfiles.pstatic.net/MjAxNzEyMDZfMjc0/MDAxNTEyNTUyNjg1ODQy.Vrm2uKClcVnEsv3i6OLnUKGahND8LDi_mTwRRyWLM8Ig.hveTy2ZjwXir4gaxelXKMRRBvgVR_G0EBrEgMoF2oRgg.PNG.1net1/image.png?type=w966"
-        answerSaveImageName = "MjAxNzEyMDZfMjc0MDAxNTEyNTUyNjg1ODQy.Vrm2uKClcVnEsv3i6OLnUKGahND8LDi_mTwRRyWLM8Ig.hveTy2ZjwXir4gaxelXKMRRBvgVR_G0EBrEgMoF2oRgg.PNG"
-        saveImageName = self.crawler.getSaveImageName(rawImageUrl)
-        self.assertEqual(answerSaveImageName, saveImageName)
 
     def test_getPostNumber(self):
         answerPostNumber = "221156999402"
@@ -44,7 +38,6 @@ class NaverBlogCrawlerTest(unittest.TestCase):
         self.crawler.writeAreasToFile()
         self.assertTrue(True)
 
-bytes
 
 if __name__ == "__main__":
     unittest.main()
