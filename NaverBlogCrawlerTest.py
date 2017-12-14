@@ -4,8 +4,10 @@ from NaverBlogCrawler import *
 class NaverBlogCrawlerTest(unittest.TestCase):
     def setUp(self):
         self.crawler = NaverBlogCrawler("http://blog.naver.com/1net1/221156999402")
+        self.crawler.postSetup()
 
     def tearDown(self):
+        self.crawler.backupFile.close()
         del self.crawler
 
     def test_getPostTestUrl(self):
@@ -35,7 +37,7 @@ class NaverBlogCrawlerTest(unittest.TestCase):
         self.assertEqual(answerTitle, self.crawler.postTitle)
 
     def test_writeBackup(self):
-        self.crawler.writeAreasToFile()
+        self.crawler.run()
         self.assertTrue(True)
 
 

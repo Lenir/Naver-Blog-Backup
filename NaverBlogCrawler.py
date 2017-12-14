@@ -15,7 +15,6 @@ class NaverBlogCrawler:
         self.backupDir = ""
         self.backupFile = None
         self.imageCount = 0
-        self.postSetup()
 
     def isSmartEditor3Posting(self, postFrameUrl):
         pass
@@ -36,6 +35,13 @@ class NaverBlogCrawler:
         self.makeBackupDir()
         self.backupFile = open(self.backupDir+"/post.html", 'w', encoding='utf-8')
         self.setupHtml()
+        del self.postSoup
+
+    def run(self):
+        self.postSetup()
+        self.writeTitleAreaToFile()
+        self.writeAreasToFile()
+        self.backupFile.close()
 
     def getPostFrameUrl(self):
         mainFrameTag = self.postSoup.find('frame', {'id': 'mainFrame'})
@@ -59,10 +65,14 @@ class NaverBlogCrawler:
         os.makedirs(self.backupDir, exist_ok=True)
 
     # post backup will save in ./posts/{postnumber+posttitle}
-    # eg. 221156999402[자료구조] 트라이(Trie)
+    # eg. ./posts/221156999402[자료구조] 트라이(Trie)/
     def getBackupDirName(self):
         dirName = "posts/"
         return dirName + self.postNumber + self.postTitle
+
+    def writeTitleAreaToFile(self):
+        titleTag = self.postFrameSoup.find('div', {'class' : 'se_editView se_title'})
+        self.backupFile.write(str(titleTag))
 
     def getPostTitle(self):
         titleTag = self.postFrameSoup.find('title')
@@ -71,45 +81,24 @@ class NaverBlogCrawler:
         return title
 
     def getPostEditAreas(self):
+        editAreas = []
         if self.postFrameUrl is None:
             raise InvalidUrl
         else:
-            editAreas = self.postFrameSoup.find_all('div', {'class': {'se_component se_paragraph default',
-                                                                      'se_component se_image default',
-                                                                      'se_component se_oglink default'}})
+            rawEditAreas = self.postFrameSoup.find_all('div', {'class': {'se_component se_paragraph default',
+                                                                            'se_component se_image default',
+                                                                            'se_component se_oglink default',
+                                                                            'se_component se_code code_stripe'}})
+            for editArea in rawEditAreas:
+                editAreas.append(EditArea(editArea))
             return editAreas
-
-    def getViewAreas(self, editArea):
-        result = []
-
 
     def writeAreasToFile(self):
         editAreas = self.getPostEditAreas()
         for editArea in editAreas:
-            self.backupFile.write("\n")
-            if self.isTextEditArea(editArea):
-                print("TEXT")
-                self.backupFile.write(str(editArea))
-            elif self.isLinkEditArea(editArea):
-                print("LINK")
-                # TODO : implement backup link block
-                pass
-            elif self.isImageEditArea(editArea):
-                strEditArea = str(editArea)
-                print("IMAGE")
-                imgSrc = re.search("src=\".*(png|jpg|gif)?type=.[0-9]*", strEditArea).group()
-                imgUrl = imgSrc[5:]
-                print("imgURL = " + imgUrl)
-                self.saveImage(imgUrl)
-
-                saveImgName = self.getSaveImageName(imgUrl)
-                print("Save img name : "+saveImgName)
-                # strEditArea = re.sub("src=\".*(png|jpg|gif)?type=.[0-9]*\"", "src=\"" + saveImgName + "\"", strEditArea)
-                strEditArea = re.sub("src=\".*(png|jpg|gif)?type=.[0-9]*\"", "src=\"" + saveImgName + "\"", strEditArea)
-                self.backupFile.write(strEditArea)
-                self.imageCount += 1
-                pass
-            self.backupFile.write("\n")
+            editArea.handleContentTags(self)
+            editArea.handleAlignTags()
+            self.backupFile.write(str(editArea))
         self.prepareCloseHtml()
         self.backupFile.close()
 
@@ -157,7 +146,40 @@ class InvalidUrl(Exception):
 class EditArea:
     # EditArea is class that based on str, found on soup(= HTML TAG)
     def __init__(self, editArea):
-        self.area = editArea
+        self.area = str(editArea)
+
+    def handleContentTags(self, crawler):
+        self.area = "\n" + self.area
+
+        if self.isTextEditArea():
+            print("TEXT", end=", ")
+        elif self.isLinkEditArea():
+            print("LINK", end=' ')
+            # TODO : implement backup link block
+            pass
+        elif self.isImageEditArea():
+            print("IMAGE", end=' ')
+            imgSaveName = crawler.getSaveImageName(self.getImageUrlInArea())
+            self.saveImageInArea(crawler.backupDir, imgSaveName)
+            print(": " + imgSaveName, end=', ')
+            self.replaceImgSrcTag(imgSaveName)
+            crawler.imageCount += 1
+        elif self.isCodeEditArea():
+            print("CODE", end=', ')
+            # TODO : implement code segment block
+
+    def saveImageInArea(self, backupDir, imgSaveName):
+        if self.isImageEditArea():
+            imageUrl = self.getImageUrlInArea()
+            request.urlretrieve(imageUrl, "./" + backupDir + "/" + imgSaveName)
+
+    def getImageUrlInArea(self):
+        imgSrcTag = re.search("src=\".*(png|jpg|gif)?type=.[0-9]*", self.area).group()
+        imgUrl = imgSrcTag[5:]
+        return imgUrl
+
+    def replaceImgSrcTag(self, imgSaveName):
+        self.area = re.sub("src=\".*(png|jpg|gif)?type=.[0-9]*\"", "src=\"" + imgSaveName + "\"", self.area)
 
     def isTextEditArea(self):
         if "se_component se_paragraph" in str(self.area):
@@ -177,6 +199,18 @@ class EditArea:
         else:
             return False
 
+    def isCodeEditArea(self):
+        if "se_component se_code code_stripe" in str(self.area):
+            return True
+        else:
+            return False
+
+    def handleAlignTags(self):
+        if self.isCenterAlignedArea():
+            self.addCenterAlignTag()
+        elif self.isRightAlignedArea():
+            self.addRightAlignTag()
+
     def isCenterAlignedArea(self):
         if "se_align-center" in str(self.area):
             return True
@@ -188,3 +222,12 @@ class EditArea:
             return True
         else:
             return False
+
+    def addCenterAlignTag(self):
+        self.area = "\n<center>\n" + self.area + "\n</center>\n"
+
+    def addRightAlignTag(self):
+        self.area = "\n<div align=\"right\">\n" + self.area + "\n</div>\n"
+
+    def __str__(self):
+        return self.area
