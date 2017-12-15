@@ -9,12 +9,12 @@ class NaverBlogCrawler:
         self.url = url
         self.postFrameUrl = ""
         self.postTitle = ""
-        self.postNumber = ""
         self.postSoup = None
         self.postFrameSoup = None
         self.backupDir = ""
         self.backupFile = None
         self.imageCount = 0
+        self.postDate = None
 
     def isSmartEditor3Posting(self, postFrameUrl):
         pass
@@ -23,12 +23,11 @@ class NaverBlogCrawler:
         postHtmlSource = requests.get(self.url).text
         self.postSoup = BeautifulSoup(postHtmlSource, "html5lib")
         self.postFrameUrl = self.getPostFrameUrl()
-        self.postNumber = self.getPostNumber()
-
 
         postFrameHttpResponse = requests.get(self.postFrameUrl).text
         self.postFrameSoup = BeautifulSoup(postFrameHttpResponse, "html5lib")
         self.postTitle = self.getPostTitle()
+        self.postDate = self.getPostDate()
 
         self.backupDir = self.getBackupDirName()
 
@@ -36,6 +35,14 @@ class NaverBlogCrawler:
         self.backupFile = open(self.backupDir+"/post.html", 'w', encoding='utf-8')
         self.setupHtml()
         del self.postSoup
+
+    def getPostDate(self):
+        publishDate = self.postFrameSoup.find('span', {'class': 'se_publishDate pcol2 fil5'})
+        publishDate = str(publishDate)
+        publishDateRegExpr = "20[0-9][0-9]\. [0-9]+\. [0-9]+\. [0-9]+:[0-9]+"
+        publishDate = re.search(publishDateRegExpr, publishDate).group()
+
+        return publishDate
 
     def run(self):
         self.postSetup()
@@ -64,11 +71,10 @@ class NaverBlogCrawler:
     def makeBackupDir(self):
         os.makedirs(self.backupDir, exist_ok=True)
 
-    # post backup will save in ./posts/{postnumber+posttitle}
-    # eg. ./posts/221156999402[자료구조] 트라이(Trie)/
+    # post backup will save in ./posts/{postDate + " " + postTitle}/...
     def getBackupDirName(self):
         dirName = "posts/"
-        return dirName + self.postNumber + self.postTitle
+        return dirName + self.postDate + " " + self.postTitle
 
     def writeTitleAreaToFile(self):
         titleTag = self.postFrameSoup.find('div', {'class' : 'se_editView se_title'})
@@ -76,19 +82,24 @@ class NaverBlogCrawler:
 
     def getPostTitle(self):
         titleTag = self.postFrameSoup.find('title')
-        title = re.sub("<title>", '', str(titleTag))
-        title = re.sub(" : 네이버 블로그</title>", '', title)
-        return title
+        titleTag = str(titleTag)
+        titleTag = re.sub("<title>", '', titleTag)
+        titleTag = re.sub(" : 네이버 블로그</title>", '', titleTag)
+        return titleTag
 
     def getPostEditAreas(self):
         editAreas = []
         if self.postFrameUrl is None:
             raise InvalidUrl
         else:
-            rawEditAreas = self.postFrameSoup.find_all('div', {'class': {'se_component se_paragraph default',
-                                                                            'se_component se_image default',
-                                                                            'se_component se_oglink default',
-                                                                            'se_component se_code code_stripe'}})
+            textViewClassName = 'se_component se_paragraph default'
+            imgViewClassName = 'se_component se_image default'
+            linkViewClassName = 'se_component se_oglink default'
+            codeViewClassName = 'se_component se_code code_stripe'
+            rawEditAreas = self.postFrameSoup.find_all('div', {'class': {textViewClassName,
+                                                                         imgViewClassName,
+                                                                         codeViewClassName,
+                                                                         linkViewClassName}})
             for editArea in rawEditAreas:
                 editAreas.append(EditArea(editArea))
             return editAreas
@@ -107,7 +118,8 @@ class NaverBlogCrawler:
             "<html>\n" \
             "   <head>\n" \
             "       <meta http-equiv=\"content-type\" content=\"text/html;charset=UTF-8\"/>\n" \
-            "   </head>\n"
+            "       <title>{}</title>\n" \
+            "   </head>\n".format(self.postTitle)
         self.backupFile.write(headers)
 
     def prepareCloseHtml(self):
@@ -231,3 +243,8 @@ class EditArea:
 
     def __str__(self):
         return self.area
+
+if __name__ == "__main__":
+    crawler = NaverBlogCrawler("http://blog.naver.com/1net1/221159842052")
+    crawler.run()
+    print(crawler.postDate)
