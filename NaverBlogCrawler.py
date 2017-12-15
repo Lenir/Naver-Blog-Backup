@@ -7,22 +7,39 @@ import re
 class NaverBlogCrawler:
     def __init__(self, url):
         self.url = url
+        if self.isforeignURL():
+            self.url = self.getNaverBlogUrl()
         self.postFrameUrl = ""
         self.postTitle = ""
-        self.postSoup = None
         self.postFrameSoup = None
         self.backupDir = ""
         self.backupFile = None
         self.imageCount = 0
         self.postDate = None
 
+    def isforeignURL(self):
+        if "blog.naver.com" in self.url:
+            return False
+        else:
+            return True
+
+    def getNaverBlogUrl(self):
+        foreignSource = requests.get(self.url).text
+        foreignSoup = BeautifulSoup(foreignSource, "html5lib")
+        naverBlogFrame = foreignSoup.find('frame', {'id': 'screenFrame'})
+        naverBlogFrame = str(naverBlogFrame)
+        print(naverBlogFrame)
+        naverBlogUrl = re.search('http://blog\.naver\.com/.*\?', naverBlogFrame).group()
+        return naverBlogUrl
+
     def isSmartEditor3Posting(self, postFrameUrl):
         pass
 
     def postSetup(self):
         postHtmlSource = requests.get(self.url).text
-        self.postSoup = BeautifulSoup(postHtmlSource, "html5lib")
-        self.postFrameUrl = self.getPostFrameUrl()
+        postSoup = BeautifulSoup(postHtmlSource, "html5lib")
+        self.postFrameUrl = self.getPostFrameUrl(postSoup)
+        print(self.postFrameUrl)
 
         postFrameHttpResponse = requests.get(self.postFrameUrl).text
         self.postFrameSoup = BeautifulSoup(postFrameHttpResponse, "html5lib")
@@ -34,10 +51,10 @@ class NaverBlogCrawler:
         self.makeBackupDir()
         self.backupFile = open(self.backupDir+"/post.html", 'w', encoding='utf-8')
         self.setupHtml()
-        del self.postSoup
 
     def getPostDate(self):
         publishDate = self.postFrameSoup.find('span', {'class': 'se_publishDate pcol2 fil5'})
+        print(publishDate)
         publishDate = str(publishDate)
         publishDateRegExpr = "20[0-9][0-9]\. [0-9]+\. [0-9]+\. [0-9]+:[0-9]+"
         publishDate = re.search(publishDateRegExpr, publishDate).group()
@@ -50,8 +67,8 @@ class NaverBlogCrawler:
         self.writeAreasToFile()
         self.backupFile.close()
 
-    def getPostFrameUrl(self):
-        mainFrameTag = self.postSoup.find('frame', {'id': 'mainFrame'})
+    def getPostFrameUrl(self, postSoup):
+        mainFrameTag = postSoup.find('frame', {'id': 'mainFrame'})
         mainFrameAttr = str(mainFrameTag).split(' ')
 
         postUrlSuffix = ""
@@ -245,6 +262,6 @@ class EditArea:
         return self.area
 
 if __name__ == "__main__":
-    crawler = NaverBlogCrawler("http://blog.naver.com/1net1/221159842052")
+    crawler = NaverBlogCrawler("http://blog.kgitbank.co.kr/221123110233")
     crawler.run()
     print(crawler.postDate)
