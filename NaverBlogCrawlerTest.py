@@ -1,9 +1,9 @@
 import unittest
-from NaverBlogCrawler import *
+from NaverBlogPostCrawler import *
 
 class NaverBlogCrawlerTest(unittest.TestCase):
     def setUp(self):
-        self.crawler = NaverBlogCrawler("http://blog.naver.com/1net1/221156999402")
+        self.crawler = NaverBlogPostCrawler("http://blog.naver.com/1net1/221156999402")
         self.crawler.postSetup()
 
     def tearDown(self):
