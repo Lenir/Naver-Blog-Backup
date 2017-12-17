@@ -17,13 +17,13 @@ class NaverBlogCrawlerTest(unittest.TestCase):
 
 
     def test_getEditAreas(self):
-        editAreas = self.crawler.getPostEditAreas()
+        editAreas = self.crawler.getSE3PostEditAreas()
         # for editArea in editAreas:
         #     print(editArea)
         self.assertTrue(editAreas is not None)
 
     def test_isTextArea(self):
-        editAreas = self.crawler.getPostEditAreas()
+        editAreas = self.crawler.getSE3PostEditAreas()
         targetArea = editAreas[1]
         self.assertTrue(self.crawler.isTextEditArea(targetArea))
 

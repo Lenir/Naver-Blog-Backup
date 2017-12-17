@@ -1,5 +1,5 @@
-from bs4 import BeautifulSoup
 from NaverBlogPostCrawler import *
+from bs4 import BeautifulSoup
 import requests
 import re
 
@@ -18,7 +18,7 @@ class NaverBlogCrawler:
             while True:
                 postNumList = self.getPostNumListViaPage(page)
                 for postNum in postNumList:
-                    postingCrawler = NaverBlogPostCrawler(urlPrefix+str(postNum))
+                    postingCrawler = NaverBlogPostCrawler(urlPrefix + str(postNum))
                     postingCrawler.run()
                 page += 1
         except NonePostListException:
