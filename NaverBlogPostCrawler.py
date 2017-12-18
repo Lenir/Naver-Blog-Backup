@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 import requests
-from urllib import request
+from urllib import request, error
+import urllib
 import os
 import re
 
@@ -245,7 +246,7 @@ class SE3EditArea:
     def saveImageInArea(self, backupDir, imgSaveName):
         if self.isImageEditArea():
             imageUrl = self.getImageUrlInArea()
-            request.urlretrieve(imageUrl, "./" + backupDir + "/" + imgSaveName)
+            request.urlretrieve(urllib.request.quote(imageUrl.encode('utf-8'), ':?=/'), "./" + backupDir + "/" + imgSaveName)
 
     def getImageUrlInArea(self):
         imgSrcTag = re.search("src=\".*(png|jpg|gif)?type=.[0-9]*", self.area).group()
@@ -373,18 +374,39 @@ class SE2Paragraph:
             return False
 
     def getImageUrlInParagraph(self):
-        imgSrc = re.search("src=\"http.*?(png|jpg|gif)?type=.[0-9]+\"", self.paragraph).group()
+        imgSrcRegularExpr = re.compile("src=\".*?\"")
+        imgSrc = imgSrcRegularExpr.search(self.paragraph).group()
         imgUrl = re.sub("src=", '', imgSrc)
         imgUrl = re.sub("\"", '', imgUrl)
+        if self.isDoubleQuotedSrc(imgUrl):
+            imgUrl = self.getImgUrlInQuotedUrl(imgUrl)
+        imgUrl = urllib.request.quote(imgUrl.encode('utf-8'), ':?=/')
         return imgUrl
 
     def replaceImgSrcTag(self, imgSaveName):
-        self.paragraph = re.sub("src=\"http.*?(png|jpg|gif)?type=.[0-9]+\"", "src=\"" + imgSaveName + "\"", self.paragraph)
+        imgSrcRegularExpr = re.compile("src=\"http.*?\"")
+        self.paragraph = imgSrcRegularExpr.sub("src=\"" + imgSaveName + "\"", self.paragraph)
 
     def saveImageInArea(self, backupDir, imgSaveName):
         if self.isImageInParagraph():
             imageUrl = self.getImageUrlInParagraph()
-            request.urlretrieve(imageUrl, "./" + backupDir + "/" + imgSaveName)
+            try:
+                request.urlretrieve(imageUrl, "./" + backupDir + "/" + imgSaveName)
+            except urllib.error.HTTPError:
+                print("ERROR in image URL")
+
+    def isDoubleQuotedSrc(self, imgUrl):
+        if "%22http%3A%2F%2F" in imgUrl:
+            return True
+        else:
+            return False
+
+    def getImgUrlInQuotedUrl(self, quotedUrl):
+        print("doubleQ" + quotedUrl)
+        quotedImgUrlRegularExpr = re.compile("http\%3A\%2F\%2F.*?(gif|jpg|png)")
+        imageUrl = quotedImgUrlRegularExpr.search(quotedUrl).group()
+        imageUrl = urllib.request.unquote(imageUrl, encoding='utf-8')
+        return imageUrl
 
 
 if __name__ == "__main__":
@@ -392,6 +414,10 @@ if __name__ == "__main__":
     # crawler.run()
     # print(crawler.postDate)
 
-    crawler = NaverBlogPostCrawler("http://blog.naver.com/1net1/30088908014")
+    chineseCharPost = "http://blog.naver.com/1net1/30088908014"
+    doubleQuotedImgPost = "https://blog.naver.com/1net1/30082417095"
+    recentPost = "http://blog.naver.com/1net1/221163927928"
+
+    crawler = NaverBlogPostCrawler(doubleQuotedImgPost)
     crawler.run()
 
