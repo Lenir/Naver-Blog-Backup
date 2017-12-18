@@ -108,12 +108,19 @@ class NaverBlogPostCrawler:
 
     # post backup will save in ./posts/{postDate + " " + postTitle}/...
     def getBackupDirName(self):
-        dirName = "posts/"
-        return dirName + self.postDate + " " + self.postTitle
+        processedDate = self.removeCharCannotUseDirName(self.postDate)
+        processedTitle = "[" + self.removeCharCannotUseDirName(self.postTitle) + "]"
+        dirName = "posts/" + processedDate + " " + processedTitle
+        return dirName
 
     def writeTitleAreaToFile(self):
         titleTag = self.getTitleTag()
         self.backupFile.write(str(titleTag))
+
+    def removeCharCannotUseDirName(self, dirName):
+        windowsDir = re.compile('[\?:|<|>|\||\*|\"\/]') # Special Chars that cannot use in Windows' Directory Name
+        fixedDirName = windowsDir.sub('', dirName)
+        return fixedDirName
 
     def getTitleTag(self):
         if self.editorVersion is 3:
@@ -385,5 +392,6 @@ if __name__ == "__main__":
     # crawler.run()
     # print(crawler.postDate)
 
-    crawler = NaverBlogPostCrawler("https://blog.naver.com/1net1/30118111438")
+    crawler = NaverBlogPostCrawler("http://blog.naver.com/1net1/30088908014")
     crawler.run()
+
