@@ -7,6 +7,8 @@ from urllib import request, error
 import urllib
 import os
 import re
+import time
+from datetime import datetime, timedelta
 
 class NaverBlogPostCrawler:
     def __init__(self, url):
@@ -76,10 +78,36 @@ class NaverBlogPostCrawler:
             publishDate = self.postFrameSoup.find('p', {'class': 'date fil5 pcol2 _postAddDate'})
 
         publishDate = str(publishDate)
-        publishDateRegExpr = "20[0-9][0-9]\. [0-9]+\. [0-9]+\. [0-9]+:[0-9]+"
-        publishDate = re.search(publishDateRegExpr, publishDate).group()
-
+        if self.isRelativePostDate(publishDate):
+            publishDate = self.getRelativePostDate(publishDate)
+        else:
+            publishDateRegExpr = "20[0-9][0-9]\. [0-9]+\. [0-9]+\. [0-9]+:[0-9]+"
+            publishDate = re.search(publishDateRegExpr, publishDate).group()
         return publishDate
+
+    def isRelativePostDate(self, postDate):
+        if "전" in postDate:
+            return True
+        else:
+            return False
+
+    def getRelativePostDate(self, relativeDate):
+        # eg. "방금 전", "3분전", "10시간 전"...
+        curTime = datetime.now()
+        if relativeDate == "방금 전":
+            pass
+        elif "분 전" in relativeDate:
+            elapsedMin = re.search("[0-9]+", relativeDate).group()
+            elapsedMin = int(elapsedMin)
+            curTime = curTime - timedelta(minutes= elapsedMin)
+        elif "시간 전" in relativeDate:
+            elapsedHour = re.search("[0-9]+", relativeDate).group()
+            elapsedHour = int(elapsedHour)
+            curTime = curTime - timedelta(hours= elapsedHour)
+        curTime = str(curTime)
+        timeRegularExpr = re.compile("[0-9]+-[0-9]+-[0-9]+ [0-9]+:[0-9]+")
+        curTime = timeRegularExpr.search(curTime).group()
+        return curTime
 
     def run(self):
         self.postSetup()
@@ -231,6 +259,8 @@ if __name__ == "__main__":
     doubleQuotedImgPost = "https://blog.naver.com/1net1/30082417095"
     recentPost = "http://blog.naver.com/1net1/221163927928"
 
-    crawler = NaverBlogPostCrawler(doubleQuotedImgPost)
-    crawler.run()
+    # crawler = NaverBlogPostCrawler(doubleQuotedImgPost)
+    # crawler.run()
+    print(datetime.now())
+    print(re.search("[0-9]+-[0-9]+-[0-9]+ [0-9]+:[0-9]+:[0-9]+", str(datetime.now() - timedelta(hours=1, minutes=20))).group())
 
