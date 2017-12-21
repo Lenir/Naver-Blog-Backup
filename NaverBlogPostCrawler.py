@@ -111,7 +111,7 @@ class NaverBlogPostCrawler:
 
     def run(self):
         self.postSetup()
-        print(self.postTitle)
+        print(self.postTitle, end=' ')
         self.writeStyleToFile()
         self.writeTitleAreaToFile()
         self.writeHtmlToFile()
@@ -200,10 +200,12 @@ class NaverBlogPostCrawler:
     def writeHtmlToFile(self):
         if self.editorVersion is 3:
             components = self.getSE3Components()
+            print("[", end=' ')
             for component in components:
                 component.handleContentTags(self)
                 component.handleAlignTags()
                 self.backupFile.write(str(component))
+            print("]", end=' ')
         elif self.editorVersion is 2:
             postViewArea = self.getSE2PostViewArea()
             postViewArea.handleParagraphs(self)
