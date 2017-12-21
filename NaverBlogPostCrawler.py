@@ -1,4 +1,4 @@
-from SE3EditArea import *
+from SE3Component import *
 from SE2PostViewArea import *
 
 from bs4 import BeautifulSoup
@@ -112,10 +112,15 @@ class NaverBlogPostCrawler:
     def run(self):
         self.postSetup()
         print(self.postTitle)
+        self.writeStyleToFile()
         self.writeTitleAreaToFile()
-        self.writeAreasToFile()
+        self.writeHtmlToFile()
         self.backupFile.close()
         print()
+
+    def writeStyleToFile(self):
+        styleTag = "<link rel=\"stylesheet\" type=\"text/css\" href=\"../../blogstyle.css\" />"
+        self.backupFile.write(styleTag)
 
     def getPostFrameUrl(self, postSoup):
         mainFrameTag = postSoup.find('frame', {'id': 'mainFrame'})
@@ -168,43 +173,43 @@ class NaverBlogPostCrawler:
         titleTag = re.sub(" : 네이버 블로그</title>", '', titleTag)
         return titleTag
 
-    def getSE3PostEditAreas(self):
-        editAreas = []
+    def getSE3Components(self):
+        components = []
         if self.postFrameUrl is None:
             raise InvalidUrl
         else:
-            textViewClassName = 'se_component se_paragraph default'
-            imgViewClassName = 'se_component se_image default'
-            linkViewClassName = 'se_component se_oglink default'
-            codeViewClassName = 'se_component se_code code_stripe'
-            rawEditAreas = self.postFrameSoup.find_all('div', {'class': {textViewClassName,
-                                                                         imgViewClassName,
-                                                                         codeViewClassName,
-                                                                         linkViewClassName}})
-            for editArea in rawEditAreas:
-                editAreas.append(SE3EditArea(editArea))
-            return editAreas
+            paragraphDivClassName = 'se_component se_paragraph default'
+            imgDivClassName = 'se_component se_image default'
+            linkDivClassName = 'se_component se_oglink default'
+            codeDivClassName = 'se_component se_code code_stripe'
+            mapDivClassName = 'se_component se_map default'
+            rawComponents = self.postFrameSoup.find_all('div', {'class': {paragraphDivClassName,
+                                                                         imgDivClassName,
+                                                                         codeDivClassName,
+                                                                         linkDivClassName,
+                                                                         mapDivClassName}})
+            for component in rawComponents:
+                components.append(SE3Component(component))
+            return components
 
     def getSE2PostViewArea(self):
         rawPostViewArea = self.postFrameSoup.find('div', {'id': 'postViewArea'})
         postViewArea = SE2PostViewArea(rawPostViewArea)
         return postViewArea
 
-    def writeAreasToFile(self):
+    def writeHtmlToFile(self):
         if self.editorVersion is 3:
-            editAreas = self.getSE3PostEditAreas()
-            for editArea in editAreas:
-                editArea.handleContentTags(self)
-                editArea.handleAlignTags()
-                self.backupFile.write(str(editArea))
+            components = self.getSE3Components()
+            for component in components:
+                component.handleContentTags(self)
+                component.handleAlignTags()
+                self.backupFile.write(str(component))
         elif self.editorVersion is 2:
             postViewArea = self.getSE2PostViewArea()
             postViewArea.handleParagraphs(self)
             postViewArea.writeSE2PostToFile(self)
         self.prepareCloseHtml()
         self.backupFile.close()
-
-
 
     def setupHtml(self):
         headers = \
@@ -218,24 +223,6 @@ class NaverBlogPostCrawler:
     def prepareCloseHtml(self):
         tagClosers = "</html>"
         self.backupFile.write(tagClosers)
-
-    def isTextEditArea(self, editArea):
-        if "se_component se_paragraph" in str(editArea):
-            return True
-        else:
-            return False
-
-    def isLinkEditArea(self, editArea):
-        if "se_component se_oglink" in str(editArea):
-            return True
-        else:
-            return False
-
-    def isImageEditArea(self, editArea):
-        if "se_component se_image" in str(editArea):
-            return True
-        else:
-            return False
 
     def saveImage(self, imageUrl):
         saveLoc = self.backupDir
@@ -258,9 +245,8 @@ if __name__ == "__main__":
     chineseCharPost = "http://blog.naver.com/1net1/30088908014"
     doubleQuotedImgPost = "https://blog.naver.com/1net1/30082417095"
     recentPost = "http://blog.naver.com/1net1/221163927928"
+    mapAndSepLinePost = "https://blog.naver.com/1net1/221166720380"
 
-    # crawler = NaverBlogPostCrawler(doubleQuotedImgPost)
-    # crawler.run()
-    print(datetime.now())
-    print(re.search("[0-9]+-[0-9]+-[0-9]+ [0-9]+:[0-9]+:[0-9]+", str(datetime.now() - timedelta(hours=1, minutes=20))).group())
+    crawler = NaverBlogPostCrawler(mapAndSepLinePost)
+    crawler.run()
 
