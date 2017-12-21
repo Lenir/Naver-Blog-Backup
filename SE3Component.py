@@ -12,12 +12,12 @@ class SE3Component:
     def handleContentTags(self, crawler):
         self.component = "\n" + self.component
         if self.isParagraphComponent():
-            print("TEXT", end=" ")
+            print(".", end=" ")
         elif self.isOutGoingLinkComponent():
-            print("LINK", end=' ')
+            print("Link", end=' ')
             # TODO : implement backup link block
         elif self.isImageComponent():
-            print("IMAGE", end=' ')
+            print("Img", end=' ')
             imgUrl = self.getImageUrlInArea()
             imgSaveName = crawler.getSaveImageName(imgUrl)
             self.saveImageInArea(crawler.backupDir, imgSaveName)
@@ -25,10 +25,11 @@ class SE3Component:
             self.replaceImgSrcTag(imgSaveName)
             crawler.imageCount += 1
         elif self.isMapComponent():
-            print("MAP", end=' ')
+            print("Map", end=' ')
         elif self.isCodeComponent():
-            print("CODE", end=' ')
+            print("Code", end=' ')
             # TODO : implement code segment block
+
 
 
     def saveImageInArea(self, backupDir, imgSaveName):

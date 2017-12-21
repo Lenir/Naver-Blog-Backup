@@ -48,9 +48,10 @@ class SE2PostViewArea:
         return paragraphs
 
     def handleParagraphs(self, crawler):
+        print("[", end=' ')
         for p in self.paragraphs:
             if p.isImageInParagraph():
-                print("IMAGE P", end=' ')
+                print("Img", end=' ')
                 imgUrl = p.getImageUrlInParagraph()
                 imgSaveName = crawler.getSaveImageName(imgUrl)
                 p.saveImageInArea(crawler.backupDir, imgSaveName)
@@ -58,7 +59,8 @@ class SE2PostViewArea:
                 p.replaceImgSrcTag(imgSaveName)
                 crawler.imageCount += 1
             else:
-                print("P", end=' ')
+                print(".", end=' ')
+        print("]", end=' ')
 
 class SE2Paragraph:
     def __init__(self, rawParagraph):
