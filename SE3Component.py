@@ -1,23 +1,22 @@
 from bs4 import BeautifulSoup
-import requests
 from urllib import request
 import urllib
+import re
 
 
-class SE3EditArea:
-    # EditArea is class that based on str, found on soup(= HTML TAG)
-    def __init__(self, editArea):
-        self.area = str(editArea)
+class SE3Component:
+    # SE3Component is class that based on str, found on soup(= HTML TAG)
+    def __init__(self, se3component):
+        self.component = str(se3component)
 
     def handleContentTags(self, crawler):
-        self.area = "\n" + self.area
-        if self.isTextEditArea():
-            print("TEXT", end=", ")
-        elif self.isLinkEditArea():
+        self.component = "\n" + self.component
+        if self.isParagraphComponent():
+            print("TEXT", end=" ")
+        elif self.isOutGoingLinkComponent():
             print("LINK", end=' ')
             # TODO : implement backup link block
-            pass
-        elif self.isImageEditArea():
+        elif self.isImageComponent():
             print("IMAGE", end=' ')
             imgUrl = self.getImageUrlInArea()
             imgSaveName = crawler.getSaveImageName(imgUrl)
@@ -25,44 +24,52 @@ class SE3EditArea:
             print(": " + imgSaveName, end=', ')
             self.replaceImgSrcTag(imgSaveName)
             crawler.imageCount += 1
-        elif self.isCodeEditArea():
-            print("CODE", end=', ')
+        elif self.isMapComponent():
+            print("MAP", end=' ')
+        elif self.isCodeComponent():
+            print("CODE", end=' ')
             # TODO : implement code segment block
 
 
     def saveImageInArea(self, backupDir, imgSaveName):
-        if self.isImageEditArea():
+        if self.isImageComponent():
             imageUrl = self.getImageUrlInArea()
             request.urlretrieve(urllib.request.quote(imageUrl.encode('utf-8'), ':?=/'), "./" + backupDir + "/" + imgSaveName)
 
     def getImageUrlInArea(self):
-        imgSrcTag = re.search("src=\".*(png|jpg|gif)?type=.[0-9]*", self.area).group()
+        imgSrcTag = re.search("src=\".*(png|jpg|gif)?type=.[0-9]*", self.component).group()
         imgUrl = imgSrcTag[5:]
         return imgUrl
 
     def replaceImgSrcTag(self, imgSaveName):
-        self.area = re.sub("src=\".*(png|jpg|gif)?type=.[0-9]*\"", "src=\"" + imgSaveName + "\"", self.area)
+        self.component = re.sub("src=\".*(png|jpg|gif)?type=.[0-9]*\"", "src=\"" + imgSaveName + "\"", self.component)
 
-    def isTextEditArea(self):
-        if "se_component se_paragraph" in str(self.area):
+    def isParagraphComponent(self):
+        if "se_component se_paragraph" in str(self.component):
             return True
         else:
             return False
 
-    def isLinkEditArea(self):
-        if "se_component se_oglink" in str(self.area):
+    def isOutGoingLinkComponent(self):
+        if "se_component se_oglink" in str(self.component):
             return True
         else:
             return False
 
-    def isImageEditArea(self):
-        if "se_component se_image" in str(self.area):
+    def isImageComponent(self):
+        if "se_component se_image" in str(self.component):
             return True
         else:
             return False
 
-    def isCodeEditArea(self):
-        if "se_component se_code code_stripe" in str(self.area):
+    def isCodeComponent(self):
+        if "se_component se_code" in str(self.component):
+            return True
+        else:
+            return False
+
+    def isMapComponent(self):
+        if "se_component se_map" in str(self.component):
             return True
         else:
             return False
@@ -74,22 +81,22 @@ class SE3EditArea:
             self.addRightAlignTag()
 
     def isCenterAlignedArea(self):
-        if "se_align-center" in str(self.area):
+        if "se_align-center" in str(self.component):
             return True
         else:
             return False
 
     def isRightAlignedArea(self):
-        if "se_align-right" in str(self.area):
+        if "se_align-right" in str(self.component):
             return True
         else:
             return False
 
     def addCenterAlignTag(self):
-        self.area = "\n<center>\n" + self.area + "\n</center>\n"
+        self.component = "\n<center>\n" + self.component + "\n</center>\n"
 
     def addRightAlignTag(self):
-        self.area = "\n<div align=\"right\">\n" + self.area + "\n</div>\n"
+        self.component = "\n<div align=\"right\">\n" + self.component + "\n</div>\n"
 
     def __str__(self):
-        return self.area
+        return self.component
