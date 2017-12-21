@@ -12,7 +12,7 @@ class NaverBlogCrawler:
         pass
 
     def run(self):
-        page = 2
+        page = 1
         urlPrefix = "https://blog.naver.com/" + self.naverId + "/"
         try:
             while True:
