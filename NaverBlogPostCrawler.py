@@ -112,7 +112,7 @@ class NaverBlogPostCrawler:
     def run(self):
         self.postSetup()
         print(self.postTitle, end=' ')
-        self.writeStyleToFile()
+        # self.writeStyleToFile()
         self.writeTitleAreaToFile()
         self.writeHtmlToFile()
         self.backupFile.close()
