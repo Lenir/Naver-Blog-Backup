@@ -112,7 +112,7 @@ class NaverBlogPostCrawler:
     def run(self):
         self.postSetup()
         print(self.postTitle, end=' ')
-        # self.writeStyleToFile()
+        self.writeStyleToFile()
         self.writeTitleAreaToFile()
         self.writeHtmlToFile()
         self.backupFile.close()
@@ -216,14 +216,18 @@ class NaverBlogPostCrawler:
     def setupHtml(self):
         headers = \
             "<html>\n" \
-            "   <head>\n" \
-            "       <meta http-equiv=\"content-type\" content=\"text/html;charset=UTF-8\"/>\n" \
-            "       <title>{}</title>\n" \
-            "   </head>\n".format(self.postTitle)
+            "    <head>\n" \
+            "        <meta http-equiv=\"content-type\" content=\"text/html;charset=UTF-8\"/>\n" \
+            "        <title>{}</title>\n" \
+            "    </head>\n" \
+            "    <body>\n".format(self.postTitle)
         self.backupFile.write(headers)
 
     def prepareCloseHtml(self):
-        tagClosers = "</html>"
+        tagClosers = \
+            "\n" \
+            "    </body>\n" \
+            "</html>"
         self.backupFile.write(tagClosers)
 
     def saveImage(self, imageUrl):
@@ -246,9 +250,10 @@ if __name__ == "__main__":
 
     chineseCharPost = "http://blog.naver.com/1net1/30088908014"
     doubleQuotedImgPost = "https://blog.naver.com/1net1/30082417095"
-    recentPost = "http://blog.naver.com/1net1/221163927928"
-    mapAndSepLinePost = "https://blog.naver.com/1net1/221166720380"
+    recentPost = "https://blog.naver.com/1net1/221159842052"
+    se2Post = "https://blog.naver.com/1net1/220385976101"
+    se2Post2 = "https://blog.naver.com/1net1/30128594574"
 
-    crawler = NaverBlogPostCrawler(mapAndSepLinePost)
+    crawler = NaverBlogPostCrawler(se2Post2)
     crawler.run()
 
