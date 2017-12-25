@@ -69,7 +69,6 @@ class NaverBlogPostCrawler:
             print("SE2Post", end=' ')
 
     def getPostDate(self):
-        # TODO : if publishDate is not like 2017. 12. 10... debug.
         publishDate = ""
 
         if self.editorVersion is 3:
@@ -105,8 +104,8 @@ class NaverBlogPostCrawler:
             elapsedHour = int(elapsedHour)
             curTime = curTime - timedelta(hours= elapsedHour)
         curTime = str(curTime)
-        timeRegularExpr = re.compile("[0-9]+-[0-9]+-[0-9]+ [0-9]+:[0-9]+")
-        curTime = timeRegularExpr.search(curTime).group()
+        timeRegex = re.compile("[0-9]+-[0-9]+-[0-9]+ [0-9]+:[0-9]+")
+        curTime = timeRegex.search(curTime).group()
         return curTime
 
     def run(self):
@@ -242,18 +241,4 @@ class NaverBlogPostCrawler:
 class InvalidUrl(Exception):
     pass
 
-
-if __name__ == "__main__":
-    # crawler = NaverBlogPostCrawler("http://blog.kgitbank.co.kr/221123110233")
-    # crawler.run()
-    # print(crawler.postDate)
-
-    chineseCharPost = "http://blog.naver.com/1net1/30088908014"
-    doubleQuotedImgPost = "https://blog.naver.com/1net1/30082417095"
-    recentPost = "https://blog.naver.com/1net1/221159842052"
-    se2Post = "https://blog.naver.com/1net1/220385976101"
-    se2Post2 = "https://blog.naver.com/1net1/30128594574"
-
-    crawler = NaverBlogPostCrawler(se2Post2)
-    crawler.run()
 
