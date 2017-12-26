@@ -1,15 +1,14 @@
 from NaverBlogPostCrawler import *
 from bs4 import BeautifulSoup
-import requests
-import re
-import time
-from multiprocessing import Process, Queue
+import requests, re, time
 from threading import Thread
+from progressbar import ProgressBar
 
 # Global Variables
 naverId = ""
 curPost = 1
 postsNum = 0
+crawlingProgressBar = None
 
 
 class NaverBlogCrawler:
@@ -24,7 +23,7 @@ class NaverBlogCrawler:
         pass
 
     def run(self):
-        global naverId, postsNum
+        global naverId, postsNum, curPost, crawlingProgressBar
         initTime = time.time()
         startPage = 1
         urlPrefix = "https://blog.naver.com/" + naverId + "/"
@@ -33,16 +32,22 @@ class NaverBlogCrawler:
         print("[ Getting post address list in {0:0.2f}s ]".format((time.time() - initTime)))
         print("[ Total posts : {}posts. Backup begins... ]".format(postsNum))
 
+        crawlingProgressBar = ProgressBar(max_value=postsNum, redirect_stdout=True)
+        crawlingProgressBar.update(curPost)
+
         divListSize = postsNum // self.threadNum
         threads = self.makeCrawlingThreads(postIdList)
 
+        self.startThreads(threads)
+
+        print("[ {0} Posts backup complete in {1:0.2f}s ]".format(postsNum, time.time() - initTime))
+
+    def startThreads(self, threads):
         for thread in threads:
             thread.start()
 
         for thread in threads:
             thread.join()
-
-        print("[ {0} Posts backup complete in {1:0.2f}s ]".format(postsNum, time.time() - initTime))
 
     def makeCrawlingThreads(self, postIdList):
         global postsNum
@@ -57,15 +62,6 @@ class NaverBlogCrawler:
                 partialList = postIdList[index*divListSize : (index+1)*divListSize]
             threads.append(NaverBlogPostCrawlThread(partialList))
         return threads
-
-    def postBackupProcess(self, postList):
-
-        for postUrl in postList:
-            print("{}/{}".format(self.curPost, self.postsNum), end=' ')
-            self.curPost += 1
-            postingCrawler = NaverBlogPostCrawler(postUrl)
-            postingCrawler.run()
-
 
     def getEntirePostIdList(self, startPage):
         page = startPage
@@ -114,10 +110,12 @@ class NaverBlogPostCrawlThread(Thread):
         # self.naverId = naverId
 
     def run(self):
-        global curPost, postsNum, naverId
+        global curPost, postsNum, naverId, crawlingProgressBar
         for postUrl in self.postList:
-            print("{}/{}".format(curPost, postsNum))
+            if self.isDevMode:
+                print("{}/{}".format(curPost, postsNum))
             curPost += 1
+            crawlingProgressBar.update(curPost)
             urlPrefix = "https://blog.naver.com/" + naverId + "/"
             postingCrawler = NaverBlogPostCrawler(urlPrefix+postUrl, self.isDevMode)
             postingCrawler.run()
