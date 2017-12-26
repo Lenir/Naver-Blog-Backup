@@ -1,4 +1,4 @@
-from distutils.core import setup
+from setuptools import setup
 
 setup(
     name='NaverBlogBackup',
@@ -22,5 +22,5 @@ setup(
         'progressbar2',
     ],
     packages=['NaverBlogCrawler'],
-    package_data={'blogstyle':['*.css']},
+    data_files=['NaverBlogCrawler/blogstyle.css'],
 )
