@@ -6,11 +6,12 @@ import re
 
 
 class SE2PostViewArea:
-    def __init__(self, postViewArea):
+    def __init__(self, postViewArea, isDevMode= False):
         self.postViewArea = str(postViewArea)
         self.header = self.getHeader()
         self.paragraphs = self.getParagraphs()
         self.footer = self.getFooter()
+        self.isDevMode = isDevMode
 
     def writeSE2PostToFile(self, crawler):
         crawler.backupFile.write("\n")
@@ -48,19 +49,24 @@ class SE2PostViewArea:
         return paragraphs
 
     def handleParagraphs(self, crawler):
-        print("[", end=' ')
+        if self.isDevMode:
+            print("[", end=' ')
         for p in self.paragraphs:
             if p.isImageInParagraph():
-                print("Img", end=' ')
+                if self.isDevMode:
+                    print("Img", end=' ')
                 imgUrl = p.getImageUrlInParagraph()
                 imgSaveName = crawler.getSaveImageName(imgUrl)
                 p.saveImageInArea(crawler.backupDir, imgSaveName)
-                print(": " + imgSaveName, end=', ')
+                if self.isDevMode:
+                    print(": " + imgSaveName, end=', ')
                 p.replaceImgSrcTag(imgSaveName)
                 crawler.imageCount += 1
             else:
-                print(".", end=' ')
-        print("]", end=' ')
+                if self.isDevMode:
+                    print(".", end=' ')
+        if self.isDevMode:
+            print("]", end=' ')
 
 class SE2Paragraph:
     def __init__(self, rawParagraph):
@@ -101,7 +107,6 @@ class SE2Paragraph:
             return False
 
     def getImgUrlInQuotedUrl(self, quotedUrl):
-        print("doubleQ" + quotedUrl)
         quotedImgUrlRegularExpr = re.compile("http\%3A\%2F\%2F.*?(gif|jpg|png)")
         imageUrl = quotedImgUrlRegularExpr.search(quotedUrl).group()
         imageUrl = urllib.request.unquote(imageUrl, encoding='utf-8')

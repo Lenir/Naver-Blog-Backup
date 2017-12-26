@@ -6,28 +6,35 @@ import re
 
 class SE3Component:
     # SE3Component is class that based on str, found on soup(= HTML TAG)
-    def __init__(self, se3component):
+    def __init__(self, se3component, isDevMode= False):
         self.component = str(se3component)
+        self.isDevMode = isDevMode
 
     def handleContentTags(self, crawler):
         self.component = "\n" + self.component
         if self.isParagraphComponent():
-            print(".", end=" ")
+            if self.isDevMode:
+                print(".", end=" ")
         elif self.isOutGoingLinkComponent():
-            print("Link", end=' ')
+            if self.isDevMode:
+                print("Link", end=' ')
             # TODO : implement backup link block
         elif self.isImageComponent():
-            print("Img", end=' ')
+            if self.isDevMode:
+                print("Img", end=' ')
             imgUrl = self.getImageUrlInArea()
             imgSaveName = crawler.getSaveImageName(imgUrl)
             self.saveImageInArea(crawler.backupDir, imgSaveName)
-            print(": " + imgSaveName, end=', ')
+            if self.isDevMode:
+                print(": " + imgSaveName, end=', ')
             self.replaceImgSrcTag(imgSaveName)
             crawler.imageCount += 1
         elif self.isMapComponent():
-            print("Map", end=' ')
+            if self.isDevMode:
+                print("Map", end=' ')
         elif self.isCodeComponent():
-            print("Code", end=' ')
+            if self.isDevMode:
+                print("Code", end=' ')
             # TODO : implement code segment block
 
 

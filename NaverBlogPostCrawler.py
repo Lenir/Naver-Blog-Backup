@@ -7,11 +7,10 @@ from urllib import request, error
 import urllib
 import os
 import re
-import time
 from datetime import datetime, timedelta
 
 class NaverBlogPostCrawler:
-    def __init__(self, url):
+    def __init__(self, url, isDevMode= False):
         self.url = url
         if self.isforeignURL():
             self.url = self.getNaverBlogUrl()
@@ -23,6 +22,7 @@ class NaverBlogPostCrawler:
         self.backupFile = None
         self.imageCount = 0
         self.postDate = None
+        self.isDevMode = isDevMode
 
     def isforeignURL(self):
         if "blog.naver.com" in self.url:
@@ -33,9 +33,12 @@ class NaverBlogPostCrawler:
     def getNaverBlogUrl(self):
         foreignSource = requests.get(self.url).text
         foreignSoup = BeautifulSoup(foreignSource, "html5lib")
+
         naverBlogFrame = foreignSoup.find('frame', {'id': 'screenFrame'})
         naverBlogFrame = str(naverBlogFrame)
-        naverBlogUrl = re.search('http://blog\.naver\.com/.*\?', naverBlogFrame).group()
+
+        naverBlogUrlRegex = re.compile('http://blog\.naver\.com/.*\?')
+        naverBlogUrl = re.search(naverBlogUrlRegex, naverBlogFrame).group()
         return naverBlogUrl
 
     def getEditorVersion(self):
@@ -62,15 +65,14 @@ class NaverBlogPostCrawler:
         self.makeBackupDir()
         self.backupFile = open(self.backupDir + "/post.html", 'w', encoding='utf-8')
         self.setupHtml()
-
-        if self.editorVersion is 3:
-            pass
-        else:
-            print("SE2Post", end=' ')
+        if self.isDevMode:
+            if self.editorVersion is 3:
+                print("SE3Post", end=' ')
+            else:
+                print("SE2Post", end=' ')
 
     def getPostDate(self):
         publishDate = ""
-
         if self.editorVersion is 3:
             publishDate = self.postFrameSoup.find('span', {'class': 'se_publishDate pcol2 fil5'})
         else:
@@ -110,12 +112,14 @@ class NaverBlogPostCrawler:
 
     def run(self):
         self.postSetup()
-        print(self.postTitle, end=' ')
+        if self.isDevMode:
+            print(self.postTitle, end=' ')
         self.writeStyleToFile()
         self.writeTitleAreaToFile()
         self.writeHtmlToFile()
         self.backupFile.close()
-        print()
+        if self.isDevMode:
+            print()
 
     def writeStyleToFile(self):
         styleTag = "<link rel=\"stylesheet\" type=\"text/css\" href=\"../../blogstyle.css\" />"
@@ -177,34 +181,36 @@ class NaverBlogPostCrawler:
         if self.postFrameUrl is None:
             raise InvalidUrl
         else:
-            paragraphDivClassName = 'se_component se_paragraph default'
-            imgDivClassName = 'se_component se_image default'
-            linkDivClassName = 'se_component se_oglink default'
-            codeDivClassName = 'se_component se_code code_stripe'
-            mapDivClassName = 'se_component se_map default'
+            paragraphDivClassName = 'se_paragraph'
+            imgDivClassName = 'se_image'
+            linkDivClassName = 'se_oglink'
+            codeDivClassName = 'se_code'
+            mapDivClassName = 'se_map'
             rawComponents = self.postFrameSoup.find_all('div', {'class': {paragraphDivClassName,
                                                                          imgDivClassName,
                                                                          codeDivClassName,
                                                                          linkDivClassName,
                                                                          mapDivClassName}})
             for component in rawComponents:
-                components.append(SE3Component(component))
+                components.append(SE3Component(component, self.isDevMode))
             return components
 
     def getSE2PostViewArea(self):
         rawPostViewArea = self.postFrameSoup.find('div', {'id': 'postViewArea'})
-        postViewArea = SE2PostViewArea(rawPostViewArea)
+        postViewArea = SE2PostViewArea(rawPostViewArea, self.isDevMode)
         return postViewArea
 
     def writeHtmlToFile(self):
         if self.editorVersion is 3:
             components = self.getSE3Components()
-            print("[", end=' ')
+            if self.isDevMode:
+                print("[", end=' ')
             for component in components:
                 component.handleContentTags(self)
                 component.handleAlignTags()
                 self.backupFile.write(str(component))
-            print("]", end=' ')
+            if self.isDevMode:
+                print("]", end=' ')
         elif self.editorVersion is 2:
             postViewArea = self.getSE2PostViewArea()
             postViewArea.handleParagraphs(self)
@@ -241,4 +247,7 @@ class NaverBlogPostCrawler:
 class InvalidUrl(Exception):
     pass
 
-
+if __name__ == "__main__":
+    codeAreaBlack = "https://blog.naver.com/1net1/221147604568"
+    crawler = NaverBlogPostCrawler(codeAreaBlack)
+    crawler.run()
