@@ -1,8 +1,6 @@
 from bs4 import BeautifulSoup
 from urllib import request
-import urllib
-import re
-
+import urllib, re
 
 class SE3Component:
     # SE3Component is class that based on str, found on soup(= HTML TAG)
@@ -18,7 +16,6 @@ class SE3Component:
         elif self.isOutGoingLinkComponent():
             if self.isDevMode:
                 print("Link", end=' ')
-            # TODO : implement backup link block
         elif self.isImageComponent():
             if self.isDevMode:
                 print("Img", end=' ')
@@ -35,9 +32,6 @@ class SE3Component:
         elif self.isCodeComponent():
             if self.isDevMode:
                 print("Code", end=' ')
-            # TODO : implement code segment block
-
-
 
     def saveImageInArea(self, backupDir, imgSaveName):
         if self.isImageComponent():

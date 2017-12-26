@@ -51,16 +51,16 @@ class SE2PostViewArea:
     def handleParagraphs(self, crawler):
         if self.isDevMode:
             print("[", end=' ')
-        for p in self.paragraphs:
-            if p.isImageInParagraph():
+        for paragraph in self.paragraphs:
+            if paragraph.isImageInParagraph():
                 if self.isDevMode:
                     print("Img", end=' ')
-                imgUrl = p.getImageUrlInParagraph()
+                imgUrl = paragraph.getImageUrlInParagraph()
                 imgSaveName = crawler.getSaveImageName(imgUrl)
-                p.saveImageInArea(crawler.backupDir, imgSaveName)
+                paragraph.saveImageInArea(crawler.backupDir, imgSaveName)
                 if self.isDevMode:
                     print(": " + imgSaveName, end=', ')
-                p.replaceImgSrcTag(imgSaveName)
+                paragraph.replaceImgSrcTag(imgSaveName)
                 crawler.imageCount += 1
             else:
                 if self.isDevMode:
@@ -98,7 +98,7 @@ class SE2Paragraph:
             try:
                 request.urlretrieve(imageUrl, "./" + backupDir + "/" + imgSaveName)
             except urllib.error.HTTPError:
-                print("ERROR in image URL")
+                print("ERROR in image URL : {}".format(imageUrl))
 
     def isDoubleQuotedSrc(self, imgUrl):
         if "%22http%3A%2F%2F" in imgUrl:
