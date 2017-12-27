@@ -1,6 +1,5 @@
-from SE3Component import *
-from SE2PostViewArea import *
-
+from NaverBlogCrawler import SE2PostViewArea as se2
+from NaverBlogCrawler import SE3Component as se3
 from bs4 import BeautifulSoup
 import requests
 from urllib import request, error
@@ -192,12 +191,12 @@ class NaverBlogPostCrawler:
                                                                          linkDivClassName,
                                                                          mapDivClassName}})
             for component in rawComponents:
-                components.append(SE3Component(component, self.isDevMode))
+                components.append(se3.SE3Component(component, self.isDevMode))
             return components
 
     def getSE2PostViewArea(self):
         rawPostViewArea = self.postFrameSoup.find('div', {'id': 'postViewArea'})
-        postViewArea = SE2PostViewArea(rawPostViewArea, self.isDevMode)
+        postViewArea = se2.SE2PostViewArea(rawPostViewArea, self.isDevMode)
         return postViewArea
 
     def writeHtmlToFile(self):
@@ -247,7 +246,3 @@ class NaverBlogPostCrawler:
 class InvalidUrl(Exception):
     pass
 
-if __name__ == "__main__":
-    codeAreaBlack = "https://blog.naver.com/1net1/221147604568"
-    crawler = NaverBlogPostCrawler(codeAreaBlack)
-    crawler.run()

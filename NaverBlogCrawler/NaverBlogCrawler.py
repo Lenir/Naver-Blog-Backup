@@ -1,4 +1,4 @@
-from NaverBlogPostCrawler import *
+from NaverBlogCrawler import NaverBlogPostCrawler
 from bs4 import BeautifulSoup
 import requests, re, time
 from threading import Thread
@@ -117,13 +117,9 @@ class NaverBlogPostCrawlThread(Thread):
             curPost += 1
             crawlingProgressBar.update(curPost)
             urlPrefix = "https://blog.naver.com/" + naverId + "/"
-            postingCrawler = NaverBlogPostCrawler(urlPrefix+postUrl, self.isDevMode)
+            postingCrawler = NaverBlogPostCrawler.NaverBlogPostCrawler(urlPrefix+postUrl, self.isDevMode)
             postingCrawler.run()
 
-
-if __name__ == "__main__":
-    crawler = NaverBlogCrawler("1net1")
-    crawler.run()
 
 class NonePostListException(Exception):
     pass

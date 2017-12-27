@@ -1,5 +1,5 @@
 import unittest
-from NaverBlogPostCrawler import *
+from NaverBlogCrawler import NaverBlogCrawler, NaverBlogPostCrawler
 
 class NaverBlogCrawlerTest(unittest.TestCase):
     def setUp(self):
