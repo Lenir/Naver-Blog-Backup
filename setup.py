@@ -1,11 +1,12 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name='NaverBlogBackup',
     description='Python Crawler for Backup Naver blog posts.',
-    version='0.1.0',
+    version='0.1.1',
     author='Lenir',
     author_email='1net1@naver.com',
+    long_description=open('README.md').read(),
     url='https://github.com/Lenir/Naver-Blog-Backup',
     license='BSD License',
     keywords=['Naver', 'NaverBlog', 'Naver-Blog-Backup'],
@@ -21,6 +22,6 @@ setup(
         'BeautifulSoup4',
         'progressbar2',
     ],
-    packages=['NaverBlogCrawler'],
-    data_files=['NaverBlogCrawler/blogstyle.css'],
+    packages=find_packages(exclude=['ez_setup', 'tests', 'tests.*']),
+    package_data={'':['blogstyle.css']},
 )
