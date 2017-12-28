@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name='NaverBlogBackup',
     description='Python Crawler for Backup Naver blog posts.',
-    version='0.1.1',
+    version='0.1.3',
     author='Lenir',
     author_email='1net1@naver.com',
     long_description=open('README.md').read(),
@@ -24,4 +24,5 @@ setup(
     ],
     packages=find_packages(exclude=['ez_setup', 'tests', 'tests.*']),
     package_data={'':['blogstyle.css']},
+    scripts=['bin/naverblogbackup.py']
 )
