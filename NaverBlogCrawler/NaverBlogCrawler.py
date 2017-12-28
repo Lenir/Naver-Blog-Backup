@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import requests, re, time
 from threading import Thread
 from progressbar import ProgressBar
+import os, shutil
 
 # Global Variables
 naverId = ""
@@ -22,6 +23,11 @@ class NaverBlogCrawler:
     def getPostList(self):
         pass
 
+    def copyCSSfile(self):
+        packagePath = os.path.dirname(NaverBlogPostCrawler.__file__)
+        cssPath = str(packagePath) + "/blogstyle.css"
+        shutil.copyfile(cssPath, "./blogstyle.css")
+
     def run(self):
         global naverId, postsNum, curPost, crawlingProgressBar
         initTime = time.time()
@@ -31,7 +37,7 @@ class NaverBlogCrawler:
         postsNum = len(postIdList)
         print("[ Getting post address list in {0:0.2f}s ]".format((time.time() - initTime)))
         print("[ Total posts : {}posts. Backup begins... ]".format(postsNum))
-
+        self.copyCSSfile()
         crawlingProgressBar = ProgressBar(max_value=postsNum, redirect_stdout=True)
         crawlingProgressBar.update(curPost)
 
