@@ -26,19 +26,19 @@ You can backup your Naver blog with using python3 script like this.
 
 Examples
 ---------
-![](https://lenir.github.io/img/NaverBlogBackup/usageScreenshot.png)
+![](https://lenir.github.io/img/NaverBlogBackup/usageScreenshot.png)  
 This is screenshot when run above python script on Terminal.  
 위의 파이썬 스크립트를 터미널에서 실행 시의 스크린샷 입니다.  
 
-![](https://lenir.github.io/img/NaverBlogBackup/bakupDirScreenshot.png)
+![](https://lenir.github.io/img/NaverBlogBackup/bakupDirScreenshot.png)  
 Inside of  `post/` directory. It makes directory for each post's backup.  
 `post/` 디렉토리 안입니다. 포스트 별로 디렉토리를 만들어 저장합니다.  
 
-![](https://lenir.github.io/img/NaverBlogBackup/postFolder.png)
+![](https://lenir.github.io/img/NaverBlogBackup/postFolder.png)  
 Inside of posting directory. Html backup saved in `post.html` and image also saved with it.  
 포스트 백업 디렉토리 내부입니다. Html 백업은 `post.html`로 저장되어 있고, 이미지도 따로 저장되어 있습니다.
 
-![](https://lenir.github.io/img/NaverBlogBackup/backupedPost.png)
+![](https://lenir.github.io/img/NaverBlogBackup/backupedPost.png)  
 This is capture of `post.html`. This backup's original page is like [this](https://blog.naver.com/1net1/221159842052). It looks pretty same.  
  `post.html`의 캡쳐입니다. 원본은 [다음](https://blog.naver.com/1net1/221159842052)과 같습니다. 내용은 원본과 같습니다.  
 
