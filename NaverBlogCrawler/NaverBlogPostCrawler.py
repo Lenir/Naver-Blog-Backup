@@ -49,8 +49,7 @@ class NaverBlogPostCrawler:
 
     def postSetup(self):
         postHtmlSource = requests.get(self.url).text
-        postSoup = BeautifulSoup(postHtmlSource, "html5lib")
-        self.postFrameUrl = self.getPostFrameUrl(postSoup)
+        self.postFrameUrl = self.getPostFrameUrl()
 
         postFrameHttpResponse = requests.get(self.postFrameUrl).text
         self.postFrameSoup = BeautifulSoup(postFrameHttpResponse, "html5lib")
@@ -124,23 +123,24 @@ class NaverBlogPostCrawler:
         styleTag = "<link rel=\"stylesheet\" type=\"text/css\" href=\"../../blogstyle.css\" />"
         self.backupFile.write(styleTag)
 
-    def getPostFrameUrl(self, postSoup):
-        mainFrameTag = postSoup.find('frame', {'id': 'mainFrame'})
-        mainFrameAttr = str(mainFrameTag).split(' ')
-
-        postUrlSuffix = ""
-        for attribute in mainFrameAttr:
-            if attribute.startswith("src="):
-                postUrlSuffix = str(attribute)[5:len(attribute) - 3]
-
-        postUrlSuffix = postUrlSuffix.replace("amp;", "")
-        postFrameUrl = "https://blog.naver.com" + postUrlSuffix
-
-        return postFrameUrl
+    def getPostFrameUrl(self):
+        naverID = self.getNaverID()
+        postNumber = self.getPostNumber()
+        postFrameURL = "https://blog.naver.com/PostView.nhn?" \
+                       "blogId=" + naverID + \
+                       "&logNo=" + postNumber
+        return postFrameURL
 
     def getPostNumber(self):
         postNum = re.sub(".*naver.com/.*/", '', self.url)
         return postNum
+
+    def getNaverID(self):
+        urlPrefix = re.compile(".*naver.com/")
+        urlSuffix = re.compile("/[0-9]+/*")
+        naverID = urlPrefix.sub('', self.url)
+        naverID = urlSuffix.sub('', naverID)
+        return naverID
 
     def makeBackupDir(self):
         os.makedirs(self.backupDir, exist_ok=True)
