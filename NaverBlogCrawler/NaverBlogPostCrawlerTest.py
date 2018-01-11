@@ -39,6 +39,14 @@ class NaverBlogPostCrawlerTest(unittest.TestCase):
         postTitle = "[SE3]NaverBlogPostCrawlerTestCase"
         self.assertEqual(self.se3postCrawler.getPostTitle(), postTitle)
 
+    def test_getSE3Component(self):
+        se3Components = self.se3postCrawler.getSE3Components()
+        self.assertTrue(se3Components is not None)
+
+    def test_getSE2(self):
+        se2PostViewArea = self.se2postCrawler.getSE2PostViewArea()
+        self.assertTrue(se2PostViewArea is not None)
+
 
 if __name__ == "__main__":
     unittest.main()
