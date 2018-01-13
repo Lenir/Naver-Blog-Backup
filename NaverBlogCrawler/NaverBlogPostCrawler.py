@@ -48,7 +48,6 @@ class NaverBlogPostCrawler:
             return 3
 
     def postSetup(self):
-        postHtmlSource = requests.get(self.url).text
         self.postFrameUrl = self.getPostFrameUrl()
 
         postFrameHttpResponse = requests.get(self.postFrameUrl).text
@@ -63,14 +62,13 @@ class NaverBlogPostCrawler:
         self.makeBackupDir()
         self.backupFile = open(self.backupDir + "/post.html", 'w', encoding='utf-8')
         self.setupHtml()
-        if self.isDevMode:
-            if self.editorVersion is 3:
-                print("SE3Post", end=' ')
-            else:
-                print("SE2Post", end=' ')
+
+        if self.editorVersion is 3:
+            self.printDevMessage("SE3Post")
+        else:
+            self.printDevMessage("SE2Post")
 
     def getPostDate(self):
-        publishDate = ""
         if self.editorVersion is 3:
             publishDate = self.postFrameSoup.find('span', {'class': 'se_publishDate pcol2 fil5'})
         else:
@@ -110,14 +108,14 @@ class NaverBlogPostCrawler:
 
     def run(self):
         self.postSetup()
-        if self.isDevMode:
-            print(self.postTitle, end=' ')
+        self.printDevMessage(self.postTitle)
+
         self.writeStyleToFile()
         self.writeTitleAreaToFile()
         self.writeHtmlToFile()
         self.backupFile.close()
-        if self.isDevMode:
-            print()
+
+        self.printDevMessage("\n")
 
     def writeStyleToFile(self):
         styleTag = "<link rel=\"stylesheet\" type=\"text/css\" href=\"../../blogstyle.css\" />"
@@ -176,7 +174,7 @@ class NaverBlogPostCrawler:
         return titleTag
 
     def getSE3Components(self):
-        components = []
+        components = list()
         if self.postFrameUrl is None:
             raise InvalidUrl
         else:
@@ -202,18 +200,17 @@ class NaverBlogPostCrawler:
     def writeHtmlToFile(self):
         if self.editorVersion is 3:
             components = self.getSE3Components()
-            if self.isDevMode:
-                print("[", end=' ')
+            self.printDevMessage("[")
             for component in components:
                 component.handleContentTags(self)
                 component.handleAlignTags()
                 self.backupFile.write(str(component))
-            if self.isDevMode:
-                print("]", end=' ')
+            self.printDevMessage("]")
         elif self.editorVersion is 2:
             postViewArea = self.getSE2PostViewArea()
             postViewArea.handleParagraphs(self)
             postViewArea.writeSE2PostToFile(self)
+
         self.prepareCloseHtml()
         self.backupFile.close()
 
@@ -241,6 +238,10 @@ class NaverBlogPostCrawler:
 
     def getSaveImageName(self, imageUrl):
         return str(self.imageCount) + "." + re.search('(png|jpg|gif)', imageUrl, re.IGNORECASE).group()
+
+    def printDevMessage(self, message):
+        if self.isDevMode:
+            print(message, end='')
 
 
 class InvalidUrl(Exception):
